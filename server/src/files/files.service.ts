@@ -41,7 +41,23 @@ export class FilesService {
     }
   }
 
-  async findAllFiles(): Promise<FileEntity[]> {
-    return this.fileRepository.find();
+  async findAllFiles(
+    page: number = 1,
+    limit: number = 10,
+    orderValue: 'ASC' | 'DESC' = 'ASC',
+  ) {
+    const [files, total] = await this.fileRepository.findAndCount({
+      take: limit,
+      skip: (page - 1) * limit,
+      order: { id: orderValue },
+    });
+
+    return {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      data: files,
+    };
   }
 }
