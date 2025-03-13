@@ -92,9 +92,16 @@ export class GoogleService {
   private async downloadFile(url: string): Promise<string | null> {
     try {
       const fileId = this.getFileIdFromUrl(url);
+      let fileType = 'file';
+      if (url.includes('document')) {
+        fileType = 'document';
+      }
+      if (url.includes('spreadsheet')) {
+        fileType = 'spreadsheet';
+      }
 
       let response: GaxiosResponse<Stream.Readable>;
-      if (url.includes('file')) {
+      if (fileType === 'file') {
         response = await this.drive.files.get(
           {
             fileId,
@@ -113,9 +120,10 @@ export class GoogleService {
         response = await this.drive.files.export(
           {
             fileId,
-            mimeType: url.includes('document')
-              ? mimeTypes.document
-              : mimeTypes.spreadsheet,
+            mimeType:
+              fileType === 'document'
+                ? mimeTypes.document
+                : mimeTypes.spreadsheet,
           },
           { responseType: 'stream' },
         );
@@ -126,7 +134,7 @@ export class GoogleService {
         fs.mkdirSync(tempDir, { recursive: true });
       }
 
-      const newFileName = `${Date.now()}_${path.basename(new URL(url).pathname)}`;
+      const newFileName = `${Date.now()}_${fileType}`;
       const filePath = path.join(tempDir, newFileName);
 
       await new Promise<void>((resolve, reject) => {
@@ -147,7 +155,15 @@ export class GoogleService {
     }
   }
 
-  getFileIdFromUrl(url: string): string {
+  async deleteFileById(id: string) {
+    try {
+      await this.drive.files.delete({ fileId: id });
+    } catch (error) {
+      console.error('Error deleting file:', error);
+    }
+  }
+
+  private getFileIdFromUrl(url: string): string {
     const regex = /\/d\/([a-zA-Z0-9_-]+)/;
     const match = url.match(regex);
 

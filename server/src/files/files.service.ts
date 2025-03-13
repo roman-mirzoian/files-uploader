@@ -25,6 +25,7 @@ export class FilesService {
 
       const fileEntities: FileEntity[] = savedFiles.map((file) =>
         this.fileRepository.create({
+          googleId: file.id || '',
           fileUrl: file.webViewLink || '',
           fileName: file.name || '',
         }),
@@ -39,6 +40,18 @@ export class FilesService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async deleteFileById(id: number) {
+    const file = await this.fileRepository.findOneBy({ id });
+    if (!file) {
+      throw new Error('File not found');
+    }
+
+    await this.googleService.deleteFileById(file.googleId);
+    await this.fileRepository.delete(id);
+
+    return { result: `File with id:${id} has been deleted` };
   }
 
   async findAllFiles(

@@ -11,6 +11,9 @@ export class FileEntity {
   id: number;
 
   @Column()
+  googleId: string;
+
+  @Column()
   fileUrl: string;
 
   @Column()

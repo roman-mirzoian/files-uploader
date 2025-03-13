@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { FilesService } from './files.service';
 
 @Controller('files')
@@ -20,5 +29,10 @@ export class FilesController {
     const limitNumber = parseInt(limit ?? '10', 10);
 
     return this.fileService.findAllFiles(pageNumber, limitNumber, order);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id', ParseIntPipe) id: number) {
+    return this.fileService.deleteFileById(id);
   }
 }
