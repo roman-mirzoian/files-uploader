@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FileEntity } from './files.entity';
 import { DataSource, Repository } from 'typeorm';
-import { GoogleService } from 'src/google/google.service';
+import { GoogleService } from '../google/google.service';
 import { drive_v3 } from 'googleapis';
 
 @Injectable()
