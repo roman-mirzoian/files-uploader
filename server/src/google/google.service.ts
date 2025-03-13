@@ -4,23 +4,49 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { GaxiosResponse } from 'gaxios';
 import Stream from 'stream';
+import { OAuth2Client } from 'googleapis-common';
 
 @Injectable()
 export class GoogleService {
+  private authClient: OAuth2Client;
   private drive: drive_v3.Drive;
 
   constructor() {
-    const auth = new google.auth.OAuth2(
+    this.authClient = new google.auth.OAuth2(
       process.env.G_CLIENT_ID,
       process.env.G_CLIENT_SECRET,
       process.env.G_REDIRECT_URI,
     );
-    auth.setCredentials({
-      access_token: process.env.G_ACCESS_TOKEN,
-      refresh_token: process.env.G_REFRESH_TOKEN,
-    });
+  }
 
-    this.drive = google.drive({ version: 'v3', auth });
+  getAuthenticationUrl() {
+    return this.authClient.generateAuthUrl({
+      access_type: 'offline',
+      prompt: 'consent',
+      scope: 'https://www.googleapis.com/auth/drive',
+      include_granted_scopes: true,
+    });
+  }
+
+  async initDriveAPI(code: string) {
+    try {
+      const { tokens } = await this.authClient.getToken(code);
+      const accessToken = tokens.access_token;
+      const refreshToken = tokens.refresh_token;
+
+      this.authClient.setCredentials({
+        refresh_token: refreshToken,
+        access_token: accessToken,
+      });
+
+      this.drive = google.drive({ version: 'v3', auth: this.authClient });
+
+      console.log('Google authentication successful!');
+      return 'Google authentication successful!';
+    } catch (error) {
+      console.error('Error authenticating:', error);
+      throw new Error('Error authenticating');
+    }
   }
 
   async uploadFiles(urls: string[]) {
@@ -33,7 +59,6 @@ export class GoogleService {
       try {
         const fileMetadata = {
           name: path.basename(filePath),
-          parents: [`${process.env.G_REDIRECT_URI}`],
         };
 
         const media = {
