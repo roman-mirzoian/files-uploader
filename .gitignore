@@ -17,9 +17,6 @@ lerna-debug.log*
 # OS
 .DS_Store
 
-# Privacy protection
-/server/google/cloud_client_secret.json
-
 # Tests
 /coverage
 /.nyc_output
