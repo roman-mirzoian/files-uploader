@@ -155,6 +155,20 @@ export class GoogleService {
     }
   }
 
+  async updateFileById(id: string, newName: string) {
+    try {
+      const file = await this.drive.files.update({
+        fileId: id,
+        requestBody: { name: newName },
+        fields: 'id, name, webViewLink, webContentLink',
+      });
+      return file;
+    } catch (error) {
+      console.error('Error updating file:', error);
+      throw new Error('Error updating file');
+    }
+  }
+
   async deleteFileById(id: string) {
     try {
       await this.drive.files.delete({ fileId: id });

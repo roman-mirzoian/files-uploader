@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -17,6 +18,19 @@ export class FilesController {
   @Post()
   async create(@Body() body: { urls: string[] }) {
     return this.fileService.saveFiles(body.urls);
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.fileService.findFileById(id);
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { newName: string },
+  ) {
+    return this.fileService.updateFileById(id, body);
   }
 
   @Get()

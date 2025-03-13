@@ -54,6 +54,23 @@ export class FilesService {
     return { result: `File with id:${id} has been deleted` };
   }
 
+  async findFileById(id: number) {
+    return this.fileRepository.findOneBy({ id });
+  }
+
+  async updateFileById(id: number, body: { newName: string }) {
+    const file = await this.fileRepository.findOneBy({ id });
+    if (!file) {
+      throw new Error('File not found');
+    }
+
+    await this.googleService.updateFileById(file.googleId, body.newName);
+    file.fileName = body.newName;
+    await this.fileRepository.save(file);
+
+    return file;
+  }
+
   async findAllFiles(
     page: number = 1,
     limit: number = 10,
