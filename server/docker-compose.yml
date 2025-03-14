@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  nestjs:
+    build: .
+    container_name: nestjs-dev
+    restart: always
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - G_CLIENT_ID=${G_CLIENT_ID}
+      - G_CLIENT_SECRET=${G_CLIENT_SECRET}
+      - G_REDIRECT_URI=${G_REDIRECT_URI}
+      - G_FOLDER_ID=${G_FOLDER_ID}
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./:/app
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    container_name: postgresDB
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
