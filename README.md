@@ -1,98 +1,164 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# File Uploader with Google Drive Integration
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project is built with NestJS and integrates with Google Drive for uploading files via HTTP requests. It provides APIs to upload files to Google Drive and retrieve the list of uploaded files with their Google Drive URLs. Additionally, the infrastructure is containerized using Docker and Docker Compose.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+- **File Upload**: Upload an array of file URLs and store them on Google Drive.
+- **File List**: Retrieve a list of files with links to their respective Google Drive locations.
+- **Google Drive Integration**: Direct interaction with Google Drive API for uploading and managing files.
+- **Database**: Uses PostgreSQL for storing metadata about the uploaded files.
+- **Dockerized**: The project uses Docker Compose to set up the entire infrastructure.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Requirements
 
-## Project setup
+- **Node.js** (v22 or later)
+- **NestJS** (v8 or later)
+- **Docker & Docker Compose**
+- **Google Cloud Account** with Drive API enabled
+- **PostgreSQL or MySQL** (PostgreSQL is the default for this project)
 
-```bash
-$ npm install
+## API Endpoints
+
+### 1. Create and save files from URLs
+
+- **URL:** `/files`
+- **Method:** `POST`
+- **Body:** `urls` (array of file URLs to upload)
+- **Response:** A list of saved files with their metadata.
+
+### Request Example:
+
+```json
+{
+  "urls": [
+    "https://docs.google.com/spreadsheets/d/exampleId1",
+    "https://docs.google.com/spreadsheets/d/exampleId2"
+  ]
+}
 ```
 
-## Compile and run the project
+### Success Response:
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```json
+[
+  {
+    "id": 1,
+    "googleId": "abc123",
+    "fileUrl": "https://drive.google.com/file/d/abc123/view",
+    "fileName": "12345_document",
+    "createdAt": "2025-03-14T00:38:45.086Z"
+  },
+  {
+    "id": 2,
+    "googleId": "xyz456",
+    "fileUrl": "https://drive.google.com/file/d/xyz456/view",
+    "fileName": "6789_document",
+    "createdAt": "2025-03-14T00:38:45.086Z"
+  }
+]
 ```
 
-## Run tests
+### 2. Get File List
 
-```bash
-# unit tests
-$ npm run test
+- **URL:** `/files`
+- **Method:** `GET`
+- **Query Parameters:** `page, limit, order` (default values are page=1, limit=10, order=ASC)
+- **Response:** A paginated list of files with their metadata.
 
-# e2e tests
-$ npm run test:e2e
+### Success Response:
 
-# test coverage
-$ npm run test:cov
+```json
+{
+  "total": 2,
+  "page": 1,
+  "limit": 10,
+  "totalPages": 1,
+  "data": [
+    {
+      "id": 1,
+      "googleId": "abc123",
+      "fileUrl": "https://drive.google.com/file/d/abc123/view",
+      "fileName": "12345_document",
+      "createdAt": "2025-03-14T00:38:45.086Z"
+    },
+    {
+      "id": 2,
+      "googleId": "xyz456",
+      "fileUrl": "https://drive.google.com/file/d/xyz456/view",
+      "fileName": "6789_document",
+      "createdAt": "2025-03-14T00:38:45.086Z"
+    }
+  ]
+}
 ```
 
-## Deployment
+### 3. Delete File
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- **URL:** `/files/:id`
+- **Method:** `DELETE`
+- **Response:** A confirmation message.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Success Response:
 
-```bash
-$ npm install -g mau
-$ mau deploy
+```json
+{
+  "result": "File with id:1 has been deleted"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 4. Get file by ID
 
-## Resources
+- **URL:** `/files/:id`
+- **Method:** `GET`
+- **Response:** Full file information.
 
-Check out a few resources that may come in handy when working with NestJS:
+### Success Response:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```json
+{
+  "id": 2,
+  "googleId": "xyz456",
+  "fileUrl": "https://drive.google.com/file/d/xyz456/view",
+  "fileName": "6789_document",
+  "createdAt": "2025-03-14T00:38:45.086Z"
+}
+```
 
-## Support
+### 5. Update file by ID
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- **URL:** `/files/:id`
+- **Method:** `PATCH`
+- **Response:** Update file name by ID.
 
-## Stay in touch
+### Request Example:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```json
+{
+  "newName": "new-name"
+}
+```
 
-## License
+### Success Response:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```json
+{
+  "id": 2,
+  "googleId": "xyz456",
+  "fileUrl": "https://drive.google.com/file/d/xyz456/view",
+  "fileName": "new-name",
+  "createdAt": "2025-03-14T00:38:45.086Z"
+}
+```
+
+### 6. Get auth URL
+
+- **URL:** `/google/auth`
+- **Method:** `GET`
+- **Response:** Get url for open google auth window.
+
+### Success Response:
+
+```json
+https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&prompt=consent&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&include_granted_scopes=true&response_type=code&client_id=3&redirect_uri=httpcallback
+```
